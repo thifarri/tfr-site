@@ -7,6 +7,6 @@
     "directory": "./public",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/loja", "/loja/*", "/__cart-prep-health"]
+    "run_worker_first": ["/*", "!/assets/*"]
   }
 }
