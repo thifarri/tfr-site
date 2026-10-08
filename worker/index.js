@@ -2792,8 +2792,24 @@ var index_default = {
           matchedLojaRoute: true,
           path,
           hostname,
-          version: "diag-2026-10-08-2"
+          version: "diag-2026-10-08-3"
         });
+      }
+      if (isCartPrepHost && request.method === "GET" && path === "/loja/__cart-html-diag") {
+        const testResponse = await serveSeoHtml(request, env, "/loja/item-teste-recipe-1791376360975");
+        const testHtml = await testResponse.text();
+        return json({
+          ok: true,
+          status: testResponse.status,
+          hasCartScript: testHtml.includes('id="tfr-store-cart-script"'),
+          hasCartStyle: testHtml.includes('id="tfr-store-cart-style"'),
+          hasCartFabCss: testHtml.includes(".tfr-cart-fab"),
+          htmlLength: testHtml.length,
+          version: "diag-2026-10-08-3"
+        });
+      }
+      if (isCartPrepHost && request.method === "GET" && (path === "/loja" || path === "/loja/" || path.startsWith("/loja/"))) {
+        return serveSeoHtml(request, env, path);
       }
       if (isCartPrepHost) {
         const readOnlyStoreApi = request.method === "GET" && path.startsWith("/api/loja/");
