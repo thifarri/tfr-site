@@ -2778,6 +2778,7 @@ var index_default = {
     const url = new URL(request.url);
     const path = url.pathname;
     const hostname = url.hostname.toLowerCase();
+    try {
       const normalizedPath = path.replace(/\/+$/, "") || "/";
       if (normalizedPath === "/api/mercadopago/webhook" || normalizedPath === "/api/webhooks/mercadopago") {
         return mercadoPagoWebhook(request, env);
