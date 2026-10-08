@@ -416,7 +416,8 @@ async function serveSeoHtml(request, env, path) {
   if (!assetResponse.ok) return assetResponse;
   const seo = await seoForPath(env, path);
   let html = injectSeo(await assetResponse.text(), seo);
-  if (new URL(request.url).hostname.toLowerCase() === "loja.tfrprojetos.com.br") {
+  const htmlHost = new URL(request.url).hostname.toLowerCase();
+  if (htmlHost === "loja.tfrprojetos.com.br" || (htmlHost.startsWith("tfr-site-cart-prep.") && htmlHost.endsWith(".workers.dev"))) {
     html = injectStoreCart(html);
     html = injectStoreCheckoutConfirmation(html);
   }
@@ -2771,7 +2772,36 @@ var index_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+    const hostname = url.hostname.toLowerCase();
+    const isCartPrepHost = hostname.startsWith("tfr-site-cart-prep.") && hostname.endsWith(".workers.dev");
     try {
+      if (isCartPrepHost) {
+        const readOnlyStoreApi = request.method === "GET" && path.startsWith("/api/loja/");
+        const sharedStaticAsset = request.method === "GET" && [
+          "/tfr-logo.png",
+          "/kim-flow-logo.png",
+          "/favicon.png",
+          "/111.png"
+        ].includes(path);
+
+        if (readOnlyStoreApi || sharedStaticAsset) {
+          const target = new URL(path + url.search, "https://loja.tfrprojetos.com.br");
+          const headers = new Headers(request.headers);
+          headers.delete("cookie");
+          headers.delete("authorization");
+          return fetch(new Request(target.toString(), {
+            method: "GET",
+            headers,
+            redirect: "follow"
+          }));
+        }
+
+        if (path.startsWith("/api/loja/") && request.method !== "GET") {
+          return json({
+            error: "Ambiente de teste: operações que criam pedidos, fretes ou pagamentos estão bloqueadas."
+          }, 403);
+        }
+      }
       const normalizedPath = path.replace(/\/+$/, "") || "/";
       if (normalizedPath === "/api/mercadopago/webhook" || normalizedPath === "/api/webhooks/mercadopago") {
         return mercadoPagoWebhook(request, env);
