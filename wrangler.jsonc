@@ -1,8 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "tfr-site-cart-prep",
+  "name": "tfr-site-cart-release-candidate",
   "main": "./worker/index.js",
   "compatibility_date": "2026-10-08",
+  "keep_vars": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
