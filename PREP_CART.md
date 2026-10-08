@@ -45,3 +45,8 @@ Quando esses bindings forem conferidos, revisar o deploy command para executar `
 Implantação do carrinho multi-item autorizada para o Worker de produção `tfr-site` em 2026-10-08.
 
 Este commit existe para disparar a primeira compilação/implantação da branch `cart-production-final`.
+
+
+### Novo gatilho de produção
+
+Branch de produção confirmada no Cloudflare como `cart-production-final`. Este commit força uma nova compilação do Worker `tfr-site`.
