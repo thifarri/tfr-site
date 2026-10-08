@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "tfr-site-cart-release-candidate",
+  "name": "tfr-site",
   "main": "./worker/index.js",
   "compatibility_date": "2026-10-08",
   "keep_vars": true,
