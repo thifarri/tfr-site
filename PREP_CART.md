@@ -38,3 +38,10 @@ Antes de trocar o nome para `tfr-site` ou conectar esta branch ao Worker de prod
 Secrets não devem ser gravados no GitHub.
 
 Quando esses bindings forem conferidos, revisar o deploy command para executar `npm run deploy`, fazer uma implantação controlada e validar uma compra real de baixo valor.
+
+
+## Implantação autorizada
+
+Implantação do carrinho multi-item autorizada para o Worker de produção `tfr-site` em 2026-10-08.
+
+Este commit existe para disparar a primeira compilação/implantação da branch `cart-production-final`.
