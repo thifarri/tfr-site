@@ -1,29 +1,40 @@
-# TFR Site — preparação segura do carrinho
+# Carrinho da Loja TFR — candidato de produção
 
-Esta branch prepara a migração do Worker atual e a correção da ordem de roteamento dos Static Assets sem alterar a branch `main` nem o site em produção.
+Branch: `cart-production-ready`
 
-## Estado desta branch
+Esta branch é o candidato de produção do carrinho multi-item. Ela foi criada a partir do ambiente de teste que passou pelos testes visuais e funcionais sem gerar pagamento real.
 
-- Contém uma cópia do Worker atualmente implantado, sem a rota temporária de recuperação de assets.
-- O Worker versionado contém o código do carrinho e o popup de confirmação de pagamento.
-- Preserva os três arquivos estáticos principais recuperados da implantação atual:
-  - `public/index.html`
-  - `public/assets/index-IkyPbxDH.js`
-  - `public/assets/index-Cpd0D9Dw.css`
-- Adiciona `wrangler.jsonc` com `assets.run_worker_first` para `/`, `/loja` e `/loja/*`.
-- Usa o nome de Worker de preparação `tfr-site-cart-prep` para evitar substituir acidentalmente o Worker de produção.
-- Bindings e secrets de produção não foram colocados no GitHub.
-- Ainda **não deve ser implantada em produção**.
+## Validado no ambiente isolado
 
-## Assets ainda não copiados
+- carrinho flutuante visível no catálogo e nas páginas de produto;
+- adicionar, remover, aumentar e diminuir quantidade;
+- dois produtos diferentes no mesmo carrinho;
+- resumo do checkout com os dois itens;
+- subtotal conjunto;
+- frete calculado para o carrinho completo;
+- retirada na loja;
+- Correios PAC e SEDEX;
+- total = produtos + frete;
+- etapa do Mercado Pago carregando Pix e cartão;
+- backend preparado para `store_order_items`, estoque por item, e-mail multi-item e sincronização de uma única ordem para o TFR Produção;
+- popup de confirmação de pagamento preservado.
 
-Os bundles atuais referenciam estes arquivos binários, que ainda precisam ser preservados antes do deploy final:
+## Proteções desta branch
 
-- `/tfr-logo.png`
-- `/kim-flow-logo.png`
-- `/favicon.png`
-- `/111.png`
+- o nome no `wrangler.jsonc` é `tfr-site-cart-release-candidate`, não `tfr-site`;
+- `keep_vars: true` preserva variáveis configuradas no painel;
+- os quatro assets binários atuais são copiados da loja ao vivo antes do deploy pelo script `npm run prepare:assets`;
+- os diagnósticos e bloqueios exclusivos do Worker de teste foram removidos;
+- o carrinho e o popup de confirmação também estão embutidos no shell estático como fallback, e os injetores do Worker são idempotentes para evitar duplicação.
 
-## Próxima etapa
+## Ainda NÃO implantar na produção
 
-Recuperar os quatro assets binários, configurar os bindings de teste e validar a branch em um Worker separado. Só depois disso revisar o nome/configuração de produção.
+Antes de trocar o nome para `tfr-site` ou conectar esta branch ao Worker de produção, é necessário colocar no `wrangler.jsonc` as associações reais do Worker atual, principalmente:
+
+- D1 `DB` → `tfr-biblioteca` com seu `database_id`;
+- D1 `PROD_DB` → `tfr-producao-db` com seu `database_id`;
+- R2 `PRODUCT_FILES` → `tfr-biblioteca-produtos`.
+
+Secrets não devem ser gravados no GitHub.
+
+Quando esses bindings forem conferidos, revisar o deploy command para executar `npm run deploy`, fazer uma implantação controlada e validar uma compra real de baixo valor.
