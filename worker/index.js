@@ -181,6 +181,7 @@ function injectSeo(html, seo) {
 }
 __name(injectSeo, "injectSeo");
 function injectStoreCart(html) {
+  if (String(html || "").includes('id="tfr-store-cart-script"')) return html;
   const block = `
 <style id="tfr-store-cart-style">
   .tfr-cart-fab{position:fixed;right:22px;bottom:92px;z-index:2147483000;display:flex;align-items:center;gap:10px;border:0;border-radius:999px;background:#071a37;color:#fff;padding:13px 17px;font:800 14px/1 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 15px 35px rgba(3,24,56,.28);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}.tfr-cart-fab:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(3,24,56,.34)}.tfr-cart-fab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2}.tfr-cart-badge{display:grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:#0aa966;color:#fff;font-size:12px;font-weight:900}
@@ -261,6 +262,7 @@ function injectStoreCart(html) {
 __name(injectStoreCart, "injectStoreCart");
 
 function injectStoreCheckoutConfirmation(html) {
+  if (String(html || "").includes('id="tfr-store-payment-confirmation-script"')) return html;
   const block = `
 <style id="tfr-store-payment-confirmation-style">
   .tfr-pay-confirmation-overlay{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(3,14,32,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;animation:tfrPayFade .22s ease-out}
