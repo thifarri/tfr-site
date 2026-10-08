@@ -2024,7 +2024,7 @@ async function sendStoreOrderConfirmationEmail(env, order, product) {
   const productionText = hasMadeToOrder
     ? `<p style="font-size:15px;line-height:1.6">Seu pedido possui item(ns) produzido(s) sob encomenda.${maxLeadDays > 0 ? ` O maior prazo de produção informado é de aproximadamente ${maxLeadDays} dia(s).` : ""}</p>`
     : "";
-  const html = `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#071333"><div style="max-width:640px;margin:0 auto;padding:32px 18px"><div style="background:#ffffff;border:1px solid #dce5f2;border-radius:14px;padding:32px"><div style="font-size:13px;font-weight:700;letter-spacing:.08em;color:#1769d2">TFR PROJETOS</div><h1 style="font-size:26px;line-height:1.2;margin:12px 0 18px">Compra confirmada</h1><p style="font-size:16px;line-height:1.6">${customerName ? `Olá, ${escapeHtml(customerName)}.` : "Olá."}</p><p style="font-size:16px;line-height:1.6">Recebemos seu pagamento e o pedido <strong>#${order.id}</strong> foi confirmado com sucesso.</p><div style="background:#f7f9fc;border-radius:10px;padding:18px;margin:22px 0"><strong>Itens do pedido</strong><div style="margin-top:8px">${itemRowsHtml}</div><div style="padding-top:14px;line-height:1.8">Produtos: ${escapeHtml(subtotalText)}<br>Frete: ${escapeHtml(shippingText)}<br><strong>Total pago: ${escapeHtml(totalText)}</strong></div></div>${productionText}<div style="background:#f7f9fc;border-radius:10px;padding:18px;margin:22px 0"><strong>${isPickup ? "Retirada" : "Entrega"}</strong><br><br>${escapeHtml(deliveryText)}</div><p style="font-size:15px;line-height:1.6">${isPickup ? "Avisaremos quando o pedido estiver pronto para retirada." : "Assim que o pedido avançar para envio, acompanhe as informações fornecidas pela TFR Projetos."}</p><p style="font-size:14px;line-height:1.6;color:#52627a">Em caso de dúvida, responda a este e-mail.</p></div><p style="font-size:12px;color:#718096;text-align:center;margin-top:18px">TFR Projetos</p></div></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#071333"><div style="max-width:640px;margin:0 auto;padding:32px 18px"><div style="background:#ffffff;border:1px solid #dce5f2;border-radius:14px;padding:32px"><div style="font-size:13px;font-weight:700;letter-spacing:.08em;color:#1769d2">TFR PROJETOS</div><h1 style="font-size:26px;line-height:1.2;margin:12px 0 18px">Compra confirmada</h1><p style="font-size:16px;line-height:1.6">${customerName ? `Olá, ${escapeHtml(customerName)}.` : "Olá."}</p><p style="font-size:16px;line-height:1.6">Recebemos seu pagamento e o pedido <strong>#${order.id}</strong> foi confirmado com sucesso.</p><div style="background:#f7f9fc;border-radius:10px;padding:18px;margin:22px 0"><strong>Itens do pedido</strong><div style="margin-top:8px">${itemRowsHtml}</div><div style="padding-top:14px;line-height:1.8">Produtos: ${escapeHtml(subtotalText)}<br>Frete: ${escapeHtml(shippingText)}<br><strong>Total pago: ${escapeHtml(totalText)}</strong></div></div>${productionText}<div style="background:#f7f9fc;border-radius:10px;padding:18px;margin:22px 0"><strong>${isPickup ? "Retirada" : "Entrega"}</strong><br><br>${escapeHtml(deliveryText)}</div><p style="font-size:15px;line-height:1.6">${isPickup ? "Avisaremos quando o pedido estiver pronto para retirada." : "Assim que o pedido avançar para envio, acompanhe as informações fornecidas pela TFR Projetos."}</p><div style="background:#eef6ff;border:1px solid #cfe1f7;border-radius:10px;padding:18px;margin:22px 0"><strong>Dados para emissão da Nota Fiscal</strong><p style="font-size:14px;line-height:1.6;margin:10px 0 8px">Para emitirmos a Nota Fiscal, responda a este e-mail informando:</p><div style="font-size:14px;line-height:1.8;color:#40536d">• CPF ou CNPJ<br>• Nome completo ou Razão Social<br>• Inscrição Estadual, se houver<br>• Endereço completo de faturamento<br>• CEP, cidade e UF</div><p style="font-size:13px;line-height:1.6;color:#607087;margin:10px 0 0">Se o endereço de faturamento for o mesmo da entrega, basta informar isso na resposta.</p></div><p style="font-size:14px;line-height:1.6;color:#52627a">Em caso de dúvida, responda a este e-mail.</p></div><p style="font-size:12px;color:#718096;text-align:center;margin-top:18px">TFR Projetos</p></div></body></html>`;
   const text = `${customerName ? `Olá, ${customerName}.` : "Olá."}
 
 Compra confirmada - TFR Projetos
@@ -2043,6 +2043,15 @@ ${deliveryText}
 
 ${isPickup ? "Avisaremos quando o pedido estiver pronto para retirada." : ""}
 
+DADOS PARA EMISSÃO DA NOTA FISCAL
+Para emitirmos a Nota Fiscal, responda a este e-mail com:
+- CPF ou CNPJ
+- Nome completo ou Razão Social
+- Inscrição Estadual, se houver
+- Endereço completo de faturamento
+- CEP, cidade e UF
+Se o endereço de faturamento for o mesmo da entrega, informe isso na resposta.
+
 TFR Projetos`;
   return resendRequest(env, {
     from: "TFR Projetos <contato@tfrprojetos.com.br>",
@@ -2052,7 +2061,7 @@ TFR Projetos`;
     subject: `Compra confirmada - Pedido #${order.id} | TFR Projetos`,
     html,
     text
-  }, `tfr-store-order-${order.id}-confirmation-v2`);
+  }, `tfr-store-order-${order.id}-confirmation-v3`);
 }
 
 __name(
@@ -2167,6 +2176,9 @@ async function syncStoreOrderToProductionState(db, order, product, payment, stor
     const productLabel = stateItems.length === 1 ? stateItems[0].product : `${stateItems.length} produtos`;
     const details = [
       `Venda automática da Loja TFR - pedido #${storeOrderId}`,
+      `Cliente: ${String(order.customer_name || client.name || "Cliente Loja TFR").trim()}`,
+      customerPhone ? `Telefone: ${customerPhone}` : "",
+      customerEmail ? `E-mail: ${customerEmail}` : "",
       paymentId ? `Mercado Pago: ${paymentId}` : "",
       `Entrega: ${order.shipping_service_name || ""}`,
       deliveryText
@@ -2291,10 +2303,13 @@ async function syncStoreOrderToProduction(env, order, product, payment) {
   const notes = [
     "Venda automática da Loja TFR",
     `Pedido da loja: #${storeOrderId}`,
+    `Cliente: ${customerName}`,
+    customerPhone ? `Telefone: ${customerPhone}` : "",
+    customerEmail ? `E-mail: ${customerEmail}` : "",
     `Pagamento Mercado Pago: ${paymentId}`,
     `Forma de entrega: ${order.shipping_service_name || ""}`,
     `Destino/retirada: ${deliveryText}`
-  ].join("\n");
+  ].filter(Boolean).join("\n");
   let productionOrderId;
   if (!productionOrder) {
     const result = await db.prepare(`INSERT INTO orders (order_number,client_id,status,subtotal_cents,discount_cents,total_cents,paid_cents,notes) VALUES (?,?,'planejamento',?,0,?,?,?)`)
