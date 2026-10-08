@@ -133,5 +133,146 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
 </script>
+  
+<style id="tfr-store-payment-confirmation-style">
+  .tfr-pay-confirmation-overlay{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(3,14,32,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;animation:tfrPayFade .22s ease-out}
+  .tfr-pay-confirmation-card{position:relative;width:min(100%,540px);overflow:hidden;border:1px solid rgba(255,255,255,.72);border-radius:28px;background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);box-shadow:0 30px 90px rgba(0,30,75,.30);padding:38px 34px 30px;text-align:center;color:#081a35;animation:tfrPayPop .32s cubic-bezier(.2,.85,.32,1.15)}
+  .tfr-pay-confirmation-glow{position:absolute;inset:-120px -80px auto;height:210px;background:radial-gradient(circle,rgba(17,176,104,.20),rgba(29,107,255,.10) 48%,transparent 70%);pointer-events:none}
+  .tfr-pay-confirmation-icon{position:relative;margin:0 auto 18px;width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#11ad68,#05c47b);box-shadow:0 16px 34px rgba(12,171,101,.28)}
+  .tfr-pay-confirmation-icon svg{width:44px;height:44px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .tfr-pay-confirmation-kicker{position:relative;margin:0 0 8px;color:#0d9f61;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+  .tfr-pay-confirmation-title{position:relative;margin:0;color:#071a37;font-size:32px;line-height:1.12;font-weight:900;letter-spacing:-.035em}
+  .tfr-pay-confirmation-text{position:relative;margin:12px auto 22px;max-width:420px;color:#607087;font-size:15px;line-height:1.6}
+  .tfr-pay-confirmation-summary{position:relative;display:grid;gap:0;margin:0 0 24px;border:1px solid #e5edf7;border-radius:18px;background:#fff;text-align:left;box-shadow:0 8px 24px rgba(21,48,86,.06);overflow:hidden}
+  .tfr-pay-confirmation-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 17px;border-bottom:1px solid #edf2f8;font-size:14px}
+  .tfr-pay-confirmation-row:last-child{border-bottom:0}
+  .tfr-pay-confirmation-row span{color:#708198}.tfr-pay-confirmation-row strong{color:#0b1e3a;text-align:right;font-weight:800}
+  .tfr-pay-confirmation-actions{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tfr-pay-confirmation-btn{min-height:50px;border-radius:14px;border:1px solid #d8e2ef;font:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+  .tfr-pay-confirmation-btn:hover{transform:translateY(-1px)}
+  .tfr-pay-confirmation-btn-primary{border:0;color:#fff;background:linear-gradient(135deg,#0a67e8,#154bd7);box-shadow:0 12px 26px rgba(24,89,211,.24)}
+  .tfr-pay-confirmation-btn-secondary{color:#233a59;background:#fff}
+  .tfr-pay-confirmation-note{position:relative;margin:18px 0 0;color:#8190a3;font-size:12px;line-height:1.5}
+  .tfr-pay-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}.tfr-pay-confetti i{position:absolute;width:8px;height:13px;border-radius:3px;opacity:.72;animation:tfrConfetti 1.8s ease-out both}.tfr-pay-confetti i:nth-child(1){left:12%;top:8%;background:#19b66d;transform:rotate(18deg)}.tfr-pay-confetti i:nth-child(2){left:23%;top:17%;background:#2878ff;animation-delay:.1s}.tfr-pay-confetti i:nth-child(3){right:18%;top:10%;background:#ffbd2f;animation-delay:.18s}.tfr-pay-confetti i:nth-child(4){right:8%;top:28%;background:#16b86e;animation-delay:.24s}.tfr-pay-confetti i:nth-child(5){left:8%;top:31%;background:#ff7a59;animation-delay:.3s}.tfr-pay-confetti i:nth-child(6){right:28%;top:22%;background:#7b61ff;animation-delay:.14s}
+  @keyframes tfrPayFade{from{opacity:0}to{opacity:1}}@keyframes tfrPayPop{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes tfrConfetti{0%{opacity:0;transform:translateY(-18px) rotate(0)}25%{opacity:.9}100%{opacity:0;transform:translateY(130px) rotate(260deg)}}
+  @media(max-width:560px){.tfr-pay-confirmation-card{padding:32px 22px 24px;border-radius:22px}.tfr-pay-confirmation-title{font-size:28px}.tfr-pay-confirmation-actions{grid-template-columns:1fr}.tfr-pay-confirmation-btn-primary{order:-1}}
+</style>
+<script id="tfr-store-payment-confirmation-script">
+(function(){
+  if(window.__TFR_STORE_PAYMENT_CONFIRMATION__) return;
+  window.__TFR_STORE_PAYMENT_CONFIRMATION__ = true;
+  var storageKey = "tfr_store_pending_payment_v1";
+  var currentWatch = "";
+  var watchTimer = null;
+  var nativeFetch = window.fetch.bind(window);
+
+  function money(cents){
+    try{return (Number(cents||0)/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});}
+    catch(e){return "R$ " + (Number(cents||0)/100).toFixed(2).replace(".",",");}
+  }
+
+  function clearPending(){
+    try{localStorage.removeItem(storageKey);}catch(e){}
+    if(watchTimer){clearTimeout(watchTimer);watchTimer=null;}
+    currentWatch="";
+  }
+
+  function savePending(orderId,paymentId){
+    try{localStorage.setItem(storageKey,JSON.stringify({orderId:Number(orderId),paymentId:String(paymentId||""),savedAt:Date.now()}));}catch(e){}
+  }
+
+  function showConfirmation(order){
+    if(document.getElementById("tfr-pay-confirmation")) return;
+    clearPending();
+    try{localStorage.removeItem("tfr_store_cart_v1");localStorage.removeItem("tfr_store_cart_checkout_v1");var cartBadge=document.querySelector(".tfr-cart-badge");if(cartBadge)cartBadge.textContent="0";}catch(e){}
+    var overlay=document.createElement("div");
+    overlay.id="tfr-pay-confirmation";
+    overlay.className="tfr-pay-confirmation-overlay";
+    overlay.setAttribute("role","dialog");
+    overlay.setAttribute("aria-modal","true");
+    overlay.setAttribute("aria-label","Pagamento confirmado");
+    var delivery=order.isPickup ? "Retirada na loja" : (order.shippingServiceName || "Entrega selecionada");
+    var orderLabel="#"+String(order.id||"").padStart(6,"0");
+    overlay.innerHTML='<div class="tfr-pay-confirmation-card">'+
+      '<div class="tfr-pay-confirmation-glow"></div>'+
+      '<div class="tfr-pay-confetti"><i></i><i></i><i></i><i></i><i></i><i></i></div>'+
+      '<div class="tfr-pay-confirmation-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></div>'+
+      '<p class="tfr-pay-confirmation-kicker">Pagamento aprovado</p>'+
+      '<h2 class="tfr-pay-confirmation-title">Compra confirmada!</h2>'+
+      '<p class="tfr-pay-confirmation-text">Recebemos seu pagamento e seu pedido já foi encaminhado para a equipe da TFR Projetos.</p>'+
+      '<div class="tfr-pay-confirmation-summary">'+
+        '<div class="tfr-pay-confirmation-row"><span>Pedido</span><strong>'+orderLabel+'</strong></div>'+
+        '<div class="tfr-pay-confirmation-row"><span>Valor pago</span><strong>'+money(order.totalCents)+'</strong></div>'+
+        '<div class="tfr-pay-confirmation-row"><span>Entrega</span><strong>'+String(delivery).replace(/[<>&]/g,"")+'</strong></div>'+
+      '</div>'+
+      '<div class="tfr-pay-confirmation-actions">'+
+        '<button type="button" class="tfr-pay-confirmation-btn tfr-pay-confirmation-btn-secondary" data-tfr-close>Fechar</button>'+
+        '<button type="button" class="tfr-pay-confirmation-btn tfr-pay-confirmation-btn-primary" data-tfr-shop>Continuar comprando</button>'+
+      '</div>'+
+      '<p class="tfr-pay-confirmation-note">A confirmação também foi enviada para o e-mail informado na compra.</p>'+
+    '</div>';
+    document.body.appendChild(overlay);
+    var close=function(){overlay.remove();};
+    overlay.querySelector("[data-tfr-close]").addEventListener("click",close);
+    overlay.querySelector("[data-tfr-shop]").addEventListener("click",function(){window.location.href="/";});
+    overlay.addEventListener("click",function(event){if(event.target===overlay) close();});
+    document.addEventListener("keydown",function esc(event){if(event.key==="Escape"){close();document.removeEventListener("keydown",esc);}});
+  }
+
+  async function checkStatus(orderId,paymentId){
+    try{
+      var response=await nativeFetch("/api/loja/pedido/"+encodeURIComponent(orderId)+"/status?paymentId="+encodeURIComponent(paymentId),{method:"GET",headers:{"accept":"application/json"},cache:"no-store"});
+      if(!response.ok) return null;
+      var data=await response.json();
+      return data && data.order ? data.order : null;
+    }catch(e){return null;}
+  }
+
+  function watch(orderId,paymentId){
+    orderId=Number(orderId);paymentId=String(paymentId||"");
+    if(!orderId||!paymentId) return;
+    var key=orderId+":"+paymentId;
+    if(currentWatch===key) return;
+    currentWatch=key;
+    savePending(orderId,paymentId);
+    var started=Date.now();
+    async function tick(){
+      if(currentWatch!==key) return;
+      var order=await checkStatus(orderId,paymentId);
+      if(order && order.status==="approved"){
+        showConfirmation(order);
+        return;
+      }
+      if(order && ["rejected","cancelled","refunded","charged_back"].indexOf(String(order.status))>=0){clearPending();return;}
+      if(Date.now()-started > 30*60*1000){currentWatch="";return;}
+      watchTimer=setTimeout(tick,4000);
+    }
+    tick();
+  }
+
+  window.fetch=async function(){
+    var args=Array.prototype.slice.call(arguments);
+    var response=await nativeFetch.apply(null,args);
+    try{
+      var input=args[0];
+      var init=args[1]||{};
+      var url=typeof input==="string"?input:(input&&input.url?input.url:"");
+      var method=String(init.method||(input&&input.method)||"GET").toUpperCase();
+      if(method==="POST" && url.indexOf("/api/loja/checkout/pagar")>=0){
+        var clone=response.clone();
+        clone.json().then(function(data){
+          if(data&&data.orderId&&data.paymentId) watch(data.orderId,data.paymentId);
+        }).catch(function(){});
+      }
+    }catch(e){}
+    return response;
+  };
+
+  try{
+    var pending=JSON.parse(localStorage.getItem(storageKey)||"null");
+    if(pending&&pending.orderId&&pending.paymentId) watch(pending.orderId,pending.paymentId);
+  }catch(e){}
+})();
+</script>
   </body>
 </html>
