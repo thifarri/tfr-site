@@ -71,6 +71,10 @@
 </style>
 <script id="tfr-store-cart-script">
 (function(){
+  var tfrCartHost=String(location.hostname||"").toLowerCase();
+  var tfrCartPath=String(location.pathname||"");
+  var tfrCartSurface=tfrCartHost==="loja.tfrprojetos.com.br" || tfrCartPath==="/loja" || tfrCartPath.indexOf("/loja/")===0;
+  if(!tfrCartSurface) return;
   if(window.__TFR_STORE_CART__) return;
   window.__TFR_STORE_CART__=true;
   var CART_KEY="tfr_store_cart_v1";
@@ -159,6 +163,10 @@
 </style>
 <script id="tfr-store-payment-confirmation-script">
 (function(){
+  var tfrPayHost=String(location.hostname||"").toLowerCase();
+  var tfrPayPath=String(location.pathname||"");
+  var tfrPaySurface=tfrPayHost==="loja.tfrprojetos.com.br" || tfrPayPath==="/loja" || tfrPayPath.indexOf("/loja/")===0;
+  if(!tfrPaySurface) return;
   if(window.__TFR_STORE_PAYMENT_CONFIRMATION__) return;
   window.__TFR_STORE_PAYMENT_CONFIRMATION__ = true;
   var storageKey = "tfr_store_pending_payment_v1";
