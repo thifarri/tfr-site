@@ -2812,6 +2812,20 @@ var index_default = {
         return serveSeoHtml(request, env, path);
       }
       if (isCartPrepHost) {
+        if (request.method === "POST" && path === "/api/loja/frete") {
+          const target = new URL(path + url.search, "https://loja.tfrprojetos.com.br");
+          const headers = new Headers(request.headers);
+          headers.delete("cookie");
+          headers.delete("authorization");
+          headers.set("content-type", request.headers.get("content-type") || "application/json");
+          return fetch(new Request(target.toString(), {
+            method: "POST",
+            headers,
+            body: await request.arrayBuffer(),
+            redirect: "follow"
+          }));
+        }
+
         const readOnlyStoreApi = request.method === "GET" && path.startsWith("/api/loja/");
         const sharedStaticAsset = request.method === "GET" && [
           "/tfr-logo.png",
