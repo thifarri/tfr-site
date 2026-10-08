@@ -2808,6 +2808,27 @@ var index_default = {
           version: "diag-2026-10-08-3"
         });
       }
+      if (isCartPrepHost && request.method === "GET" && path === "/loja/__frete-diag") {
+        const target = new URL("/api/loja/frete", "https://loja.tfrprojetos.com.br");
+        const response = await fetch(target.toString(), {
+          method: "POST",
+          headers: { "content-type": "application/json", "accept": "application/json" },
+          body: JSON.stringify({
+            cep: "17470000",
+            items: [
+              { slug: "item-teste-recipe-1791376360975", quantity: 1 },
+              { slug: "item-teste-2-recipe-1791473679345", quantity: 1 }
+            ]
+          })
+        });
+        const payload = await response.json().catch(() => ({}));
+        return json({
+          ok: response.ok,
+          status: response.status,
+          payload,
+          version: "frete-diag-2026-10-08-1"
+        }, response.ok ? 200 : response.status);
+      }
       if (isCartPrepHost && request.method === "GET" && (path === "/loja" || path === "/loja/" || path.startsWith("/loja/"))) {
         return serveSeoHtml(request, env, path);
       }
