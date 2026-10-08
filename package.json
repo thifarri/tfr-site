@@ -1,9 +1,10 @@
 {
-  "name": "tfr-site-cart-prep",
+  "name": "tfr-site-cart-release-candidate",
   "private": true,
   "scripts": {
-    "dev:worker": "wrangler dev",
-    "deploy:prep": "wrangler deploy"
+    "prepare:assets": "node ./scripts/fetch-static-assets.mjs",
+    "deploy": "npm run prepare:assets && wrangler deploy",
+    "dev:worker": "wrangler dev"
   },
   "devDependencies": {
     "wrangler": "^4.20.0"
