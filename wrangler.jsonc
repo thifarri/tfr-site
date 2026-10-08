@@ -9,5 +9,23 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/*", "!/assets/*"]
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tfr-biblioteca",
+      "database_id": "966e89c0-4369-41e9-ac57-aded6f5cb991"
+    },
+    {
+      "binding": "PROD_DB",
+      "database_name": "tfr-producao-db",
+      "database_id": "5e3e0a8c-8856-4fe8-a583-43bc6c829ceb"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PRODUCT_FILES",
+      "bucket_name": "tfr-biblioteca-produtos"
+    }
+  ]
 }
