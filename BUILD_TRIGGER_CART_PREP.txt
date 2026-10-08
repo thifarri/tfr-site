@@ -1,2 +1,0 @@
-Build trigger for Cloudflare cart preview branch.
-Includes the explicit Worker-first SPA route configuration from commit 06258a0.
