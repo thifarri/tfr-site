@@ -2783,7 +2783,16 @@ var index_default = {
           ok: true,
           worker: "tfr-site-cart-prep",
           cartInjectorPresent: typeof injectStoreCart === "function",
-          version: "diag-2026-10-08-1"
+          version: "diag-2026-10-08-2"
+        });
+      }
+      if (isCartPrepHost && request.method === "GET" && path === "/loja/__cart-diag") {
+        return json({
+          ok: true,
+          matchedLojaRoute: true,
+          path,
+          hostname,
+          version: "diag-2026-10-08-2"
         });
       }
       if (isCartPrepHost) {
