@@ -423,6 +423,9 @@ async function serveSeoHtml(request, env, path) {
   }
   const headers = new Headers(assetResponse.headers);
   headers.set("content-type", "text/html; charset=utf-8");
+  if (htmlHost.startsWith("tfr-site-cart-prep.") && htmlHost.endsWith(".workers.dev")) {
+    headers.set("x-tfr-cart-prep", "injected");
+  }
   headers.set(
     "cache-control",
     path === "/" || path === "/biblioteca" ? "public, max-age=300" : "public, max-age=60"
@@ -2775,6 +2778,14 @@ var index_default = {
     const hostname = url.hostname.toLowerCase();
     const isCartPrepHost = hostname.startsWith("tfr-site-cart-prep.") && hostname.endsWith(".workers.dev");
     try {
+      if (isCartPrepHost && request.method === "GET" && path === "/__cart-prep-health") {
+        return json({
+          ok: true,
+          worker: "tfr-site-cart-prep",
+          cartInjectorPresent: typeof injectStoreCart === "function",
+          version: "diag-2026-10-08-1"
+        });
+      }
       if (isCartPrepHost) {
         const readOnlyStoreApi = request.method === "GET" && path.startsWith("/api/loja/");
         const sharedStaticAsset = request.method === "GET" && [
