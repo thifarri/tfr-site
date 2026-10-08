@@ -2778,103 +2778,6 @@ var index_default = {
     const url = new URL(request.url);
     const path = url.pathname;
     const hostname = url.hostname.toLowerCase();
-    const isCartPrepHost = hostname.startsWith("tfr-site-cart-prep.") && hostname.endsWith(".workers.dev");
-    try {
-      if (isCartPrepHost && request.method === "GET" && path === "/__cart-prep-health") {
-        return json({
-          ok: true,
-          worker: "tfr-site-cart-prep",
-          cartInjectorPresent: typeof injectStoreCart === "function",
-          version: "diag-2026-10-08-2"
-        });
-      }
-      if (isCartPrepHost && request.method === "GET" && path === "/loja/__cart-diag") {
-        return json({
-          ok: true,
-          matchedLojaRoute: true,
-          path,
-          hostname,
-          version: "diag-2026-10-08-3"
-        });
-      }
-      if (isCartPrepHost && request.method === "GET" && path === "/loja/__cart-html-diag") {
-        const testResponse = await serveSeoHtml(request, env, "/loja/item-teste-recipe-1791376360975");
-        const testHtml = await testResponse.text();
-        return json({
-          ok: true,
-          status: testResponse.status,
-          hasCartScript: testHtml.includes('id="tfr-store-cart-script"'),
-          hasCartStyle: testHtml.includes('id="tfr-store-cart-style"'),
-          hasCartFabCss: testHtml.includes(".tfr-cart-fab"),
-          htmlLength: testHtml.length,
-          version: "diag-2026-10-08-3"
-        });
-      }
-      if (isCartPrepHost && request.method === "GET" && path === "/loja/__frete-diag") {
-        const target = new URL("/api/loja/frete", "https://loja.tfrprojetos.com.br");
-        const response = await fetch(target.toString(), {
-          method: "POST",
-          headers: { "content-type": "application/json", "accept": "application/json" },
-          body: JSON.stringify({
-            cep: "17470000",
-            items: [
-              { slug: "item-teste-recipe-1791376360975", quantity: 1 },
-              { slug: "item-teste-2-recipe-1791473679345", quantity: 1 }
-            ]
-          })
-        });
-        const payload = await response.json().catch(() => ({}));
-        return json({
-          ok: response.ok,
-          status: response.status,
-          payload,
-          version: "frete-diag-2026-10-08-1"
-        }, response.ok ? 200 : response.status);
-      }
-      if (isCartPrepHost && request.method === "GET" && (path === "/loja" || path === "/loja/" || path.startsWith("/loja/"))) {
-        return serveSeoHtml(request, env, path);
-      }
-      if (isCartPrepHost) {
-        if (request.method === "POST" && path === "/api/loja/frete") {
-          const target = new URL(path + url.search, "https://loja.tfrprojetos.com.br");
-          const headers = new Headers(request.headers);
-          headers.delete("cookie");
-          headers.delete("authorization");
-          headers.set("content-type", request.headers.get("content-type") || "application/json");
-          return fetch(new Request(target.toString(), {
-            method: "POST",
-            headers,
-            body: await request.arrayBuffer(),
-            redirect: "follow"
-          }));
-        }
-
-        const readOnlyStoreApi = request.method === "GET" && path.startsWith("/api/loja/");
-        const sharedStaticAsset = request.method === "GET" && [
-          "/tfr-logo.png",
-          "/kim-flow-logo.png",
-          "/favicon.png",
-          "/111.png"
-        ].includes(path);
-
-        if (readOnlyStoreApi || sharedStaticAsset) {
-          const target = new URL(path + url.search, "https://loja.tfrprojetos.com.br");
-          const headers = new Headers(request.headers);
-          headers.delete("cookie");
-          headers.delete("authorization");
-          return fetch(new Request(target.toString(), {
-            method: "GET",
-            headers,
-            redirect: "follow"
-          }));
-        }
-
-        if (path.startsWith("/api/loja/") && request.method !== "GET") {
-          return json({
-            error: "Ambiente de teste: operações que criam pedidos, fretes ou pagamentos estão bloqueadas."
-          }, 403);
-        }
-      }
       const normalizedPath = path.replace(/\/+$/, "") || "/";
       if (normalizedPath === "/api/mercadopago/webhook" || normalizedPath === "/api/webhooks/mercadopago") {
         return mercadoPagoWebhook(request, env);
@@ -2959,14 +2862,8 @@ var index_default = {
         if (itemMatch && request.method === "PUT") return saveProduct(request, env, Number(itemMatch[1]));
         if (itemMatch && request.method === "DELETE") return deleteProduct(env, Number(itemMatch[1]));
       }
-      const forcePrepHtml = isCartPrepHost && request.method === "GET" && (
-        path === "/" ||
-        path === "/loja" ||
-        path === "/loja/" ||
-        path.startsWith("/loja/")
-      );
-      if (forcePrepHtml || (request.method === "GET" && (request.headers.get("accept") || "").includes("text/html"))) {
-        const seoPath = (hostname === "loja.tfrprojetos.com.br" || isCartPrepHost) && (path === "/" || path === "") ? "/loja" : path;
+      if (request.method === "GET" && (request.headers.get("accept") || "").includes("text/html")) {
+        const seoPath = hostname === "loja.tfrprojetos.com.br" && (path === "/" || path === "") ? "/loja" : path;
         return serveSeoHtml(request, env, seoPath);
       }
       return env.ASSETS.fetch(request);
