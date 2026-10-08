@@ -1,5 +1,5 @@
 {
-  "name": "tfr-site-cart-release-candidate",
+  "name": "tfr-site",
   "private": true,
   "scripts": {
     "prepare:assets": "node ./scripts/fetch-static-assets.mjs",
