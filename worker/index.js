@@ -2886,8 +2886,14 @@ var index_default = {
         if (itemMatch && request.method === "PUT") return saveProduct(request, env, Number(itemMatch[1]));
         if (itemMatch && request.method === "DELETE") return deleteProduct(env, Number(itemMatch[1]));
       }
-      if (request.method === "GET" && (request.headers.get("accept") || "").includes("text/html")) {
-        const seoPath = url.hostname.toLowerCase() === "loja.tfrprojetos.com.br" && (path === "/" || path === "") ? "/loja" : path;
+      const forcePrepHtml = isCartPrepHost && request.method === "GET" && (
+        path === "/" ||
+        path === "/loja" ||
+        path === "/loja/" ||
+        path.startsWith("/loja/")
+      );
+      if (forcePrepHtml || (request.method === "GET" && (request.headers.get("accept") || "").includes("text/html"))) {
+        const seoPath = (hostname === "loja.tfrprojetos.com.br" || isCartPrepHost) && (path === "/" || path === "") ? "/loja" : path;
         return serveSeoHtml(request, env, seoPath);
       }
       return env.ASSETS.fetch(request);
